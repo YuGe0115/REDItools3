@@ -1,49 +1,34 @@
-#!/usr/bin/env python
+"""Miscellaneous utility functions."""
 
-'''
-Miscellaneous utility functions
-'''
-
-import os
-import socket
 import csv
-from gzip import open as gzip_open
+import os
+import re
+import socket
 from collections import defaultdict
+
+from pysam.libcalignmentfile import AlignmentFile
 from sortedcontainers import SortedSet
 
-def open_stream(path, mode="rt", encoding="utf-8"):
-    '''
-    Opens a input or output stream from a file, accounting for gzip.
+from reditools.file_utils import open_stream
 
-    Parameters:
-        path (str): Path to file for reading or writing
-        mode (str): File mode
-
-        gzip (bool): Whether the file is or should be gzipped
-
-    Returns:
-        TextIOWrapper to the file
-    '''
-    if path.endswith("gz"):
-        return gzip_open(path, mode, encoding=encoding)
-    return open(path, mode, encoding=encoding)
 
 def read_bed_file(path):
-    '''
-    Returns an iterator for a BED file.
+    """
+    Return an iterator for a BED file.
 
     Parameters:
         path (str): Path to a BED file for reading.
 
     Returns:
         Iterator of BED file contents.
-    '''
+    """
     stream = open_stream(path)
-    return csv.reader(stream, delimiter="\t")
+    return csv.reader(stream, delimiter='\t')
+
 
 def enumerate_positions(regions):
-    '''
-    Converts a list of regions into a list of individual positions.
+    """
+    Convert a list of regions into a list of individual positions.
 
     Parameters:
         regions (list): A list of iterables. Each element must start
@@ -51,31 +36,30 @@ def enumerate_positions(regions):
                         is optional. Additional values will be ignored.
 
     Returns:
-        Dictionary of contigs to SortedSets enumerating the individual positions.
-    '''
+        SortedSet enumerating the individual positions.
+    """
     positions = defaultdict(SortedSet)
-    for reg in regions:
-        contig = reg[0]
-        start = int(reg[1]) - 1
-        end = start + 1 if len(reg) < 3 else int(reg[2])
-        positions[contig] |= range(start, end)
+    for region in regions:
+        positions[region.contig] |= region.enumerate()
     return positions
 
+
 def get_hostname_string():
-    '''
-    Retrieves the machine hostname, ip, and proccess ID.
+    """
+    Retrieve the machine hostname, ip, and proccess ID.
 
     Returns:
         String in the format "hostname|ip|pid"
-    '''
+    """
     hostname = socket.gethostname()
     ip_addr = socket.gethostbyname(hostname)
     pid = os.getpid()
-    return f"{hostname}|{ip_addr}|{pid}"
+    return f'{hostname}|{ip_addr}|{pid}'
+
 
 def check_list(functions, **kwargs):
-    '''
-    Runs through a list of functions, determining if any return False.
+    """
+    Run through a list of functions, determining if any return False.
 
     Parameters:
         functions (list): A list of function references
@@ -83,8 +67,40 @@ def check_list(functions, **kwargs):
 
     Returns:
         False if any function in check_list returns False, else True
-    '''
+    """
     for check in functions:
         if not check(**kwargs):
             return False
     return True
+
+
+def to_int(string):
+    """
+    Convert a (potentially formatted) string to an int.
+
+    Parameters:
+        string (str): A string representation of an integer
+
+    Returns:
+        The integer values of the string.
+    """
+    return int(re.sub(r'[\s,]', '', string))
+
+
+def get_contigs(sam_path):
+    """
+    Retrieve contig or chromsome data from an alignment file.
+
+    Parameters:
+        sam_path (string): Path to an alignment file.
+
+    Returns:
+        tuple of lists containing the reference names and reference lengths in
+        corresponding order
+    """
+    with AlignmentFile(sam_path, ignore_truncation=True) as sam:
+        contigs = list(sam.references)
+        sizes = list(sam.lengths)
+        indices = range(len(contigs))
+        indices = sorted(indices, key=lambda idx: contigs[idx])
+        return ((contigs[idx], sizes[idx]) for idx in indices)
