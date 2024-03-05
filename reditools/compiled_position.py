@@ -43,7 +43,7 @@ class CompiledPosition(object):
             self.counter = {base: 0 for base in self._bases}
             for base_member in self.bases:
                 self.counter[base_member] += 1
-        elif base.upper() == 'REF':
+        if base.upper() == 'REF':
             return self.counter[self.ref]
         return self.counter[base]
 
