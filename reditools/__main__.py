@@ -79,7 +79,10 @@ def setup_rtools(options):  # noqa:WPS213
         rtools.log_level = Logger.info_level
 
     if options.load_omopolymeric_file:
-        rtools.load_omopolymeric_positions(options.load_omopolymeric_file)
+        regions = file_utils.load_omopolymeric_regions(
+            options.load_omopolymeric_file,
+        )
+        rtools.exclude(regions)
 
     if options.create_omopolymeric_file:
         rtools.create_omopolymeric_positions(
@@ -96,7 +99,8 @@ def setup_rtools(options):  # noqa:WPS213
     if options.bed_file:
         rtools.load_target_positions(options.bed_file)
     if options.exclude_regions:
-        rtools.load_exclude_positions(options.exclude_regions)
+        regions = file_utils.read_bed_file(options.exclude_regions)
+        rtools.exclude(regions)
     if options.reference:
         rtools.add_reference(options.reference)
 
