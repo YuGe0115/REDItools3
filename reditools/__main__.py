@@ -428,7 +428,7 @@ def parse_options():  # noqa:WPS213
         help='Path of BED file containing regions to exclude from analysis',
     )
     parser.add_argument(
-        '-e',
+        '-E',
         '--exclude_reads',
         help='Path to a text file listing read names to exclude from analysis',
     )
