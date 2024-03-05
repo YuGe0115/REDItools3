@@ -45,6 +45,7 @@ class RTChecks(object):
         return utils.check_list(
             self.check_list,
             bases=bases,
+            rtools=rtools,
         )
 
     def check_splice_positions(self, rtools, bases, contig, position):
@@ -145,15 +146,13 @@ class RTChecks(object):
             return False
         return True
 
-    def check_column_edit_frequency(self, rtools, bases, contig, position):
+    def check_column_edit_frequency(self, rtools, bases):
         """
         Check the number of edits at the site.
 
         Parameters:
             rtools (REDItools): Object performing analysis
             bases (CompiledPosition): Base position under analysis
-            contig (str): Current contig
-            position (int): Current position
 
         Returns:
             (bool): True if there are sufficient edits.
