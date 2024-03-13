@@ -7,7 +7,6 @@ Authors:
 """
 
 from reditools import utils
-from reditools.alignment_manager import AlignmentManager
 from reditools.compiled_reads import CompiledReads
 from reditools.fasta_file import RTFastaFile
 from reditools.logger import Logger
@@ -114,7 +113,7 @@ class REDItools(object):
         self.log_level = Logger.silent_level
 
         self.strand = 0
-        self.usestrand_correction = False
+        self._use_strand_correction = False
         self.strand_confidence_threshold = 0.5
 
         self.min_base_quality = 30
@@ -123,15 +122,32 @@ class REDItools(object):
 
         self._rtqc = RTChecks()
 
-        self.min_read_length = 30
         self._min_read_quality = 0
 
         self._target_positions = False
         self._exclude_positions = {}
         self._splice_positions = []
         self._poly_positions = []
+        self._specific_edits = None
 
         self.reference = None
+
+        self._include_refs = None
+
+    @property
+    def specific_edits(self):
+        """
+        Specific edit events to report.
+
+        Returns:
+            iterable
+        """
+        return self._specific_edits
+
+    @specific_edits.setter
+    def specific_edits(self, alts):
+        self._specific_edits = set(alts)
+        self._include_refs = [_[0] for _ in alts]
 
     @property
     def poly_positions(self):
@@ -148,7 +164,7 @@ class REDItools(object):
         function = self._rtqc.check_poly_positions
         if regions:
             self._poly_positions = utils.enumerate_positions(regions)
-            self._reqc.add(function)
+            self._rtqc.add(function)
         else:
             self._poly_positions = []
             self._rtqc.discard(function)
@@ -189,20 +205,6 @@ class REDItools(object):
             self._target_positions = utils.enumerate_positions(regions)
         else:
             self._target_positions = False
-
-    @property
-    def exclude_positions(self):
-        """
-        Do not report results for these locations.
-
-        Returns:
-            list
-        """
-        return self.exclude_positions
-
-    @exclude_positions.setter
-    def exclude_positions(self, regions):
-        self.exclude_positions = utils.enumerate_positions(regions)
 
     @property
     def log_level(self):
@@ -281,12 +283,24 @@ class REDItools(object):
         else:
             self._rtqc.discard(function)
 
-    def analyze(self, bam_files, region=None):  # noqa:WPS231,WPS213
+    def exclude(self, regions):
+        """
+        Explicitly skip specified genomic regions.
+
+        Parameters:
+            regions (list): Regions to skip
+        """
+        for region in regions:
+            contig = region.contig
+            old_pos = self._exclude_positions.get(contig, set())
+            self._exclude_positions[contig] = old_pos | region.enumerate()
+
+    def analyze(self, alignment_manager, region=None):  # noqa:WPS231,WPS213
         """
         Detect RNA editing events.
 
         Parameters:
-            bam_files (list): Names of BAM files to read from
+            alignment_manager (AlignmentManager): Source of reads
             region (Region): Where to look for edits
 
         Yields:
@@ -295,22 +309,14 @@ class REDItools(object):
         if region is None:
             region = {}
 
-        sam_manager = AlignmentManager(
-            ignore_truncation=True,
-        )
-        sam_manager.min_quality = self._min_read_quality
-        sam_manager.min_length = self.min_read_length
-        for bam in bam_files:
-            sam_manager.add_file(bam)
-
         # Open the iterator
         self.log(
             Logger.info_level,
             'Fetching data from bams {} [REGION={}]',
-            bam_files,
+            alignment_manager.file_list,
             region,
         )
-        read_iter = sam_manager.fetch_by_position(region=region)
+        read_iter = alignment_manager.fetch_by_position(region=region)
         reads = next(read_iter, None)
 
         nucleotides = CompiledReads(
@@ -329,8 +335,8 @@ class REDItools(object):
                     Logger.debug_level,
                     'Nucleotides is empty: skipping ahead',
                 )
-                position = sam_manager.position
-                contig = sam_manager.contig
+                position = alignment_manager.position
+                contig = alignment_manager.contig
             else:
                 position += 1
 
@@ -352,6 +358,16 @@ class REDItools(object):
 
             # Process edits
             bases = nucleotides.pop(position)
+            if bases is None:
+                self.log(Logger.debug_level, 'No reads - skipping')
+                continue
+            if self._include_refs and bases.ref not in self._include_refs:
+                self.log(
+                    Logger.debug_level,
+                    'Reference base "{}" not listed for reporting - skipping.',
+                    bases.ref,
+                )
+                continue
             if position in self._exclude_positions.get(contig, []):
                 self.log(Logger.debug_level, 'Listed exclusion - skipping')
                 continue
@@ -362,13 +378,17 @@ class REDItools(object):
                         'Not listed for inclusion - skipping',
                     )
                     continue
-            if bases is None:
-                self.log(Logger.debug_level, 'No reads - skipping')
-                continue
             column = self._get_column(position, bases, region)
             if column is None:
                 self.log(Logger.debug_level, 'Bad column - skipping')
                 continue
+            if self._specific_edits:
+                if not self._specific_edits & set(column.variants):
+                    self.log(
+                        Logger.debug_level,
+                        'Requested edits not found - skipping',
+                    )
+                    continue
             self.log(
                 Logger.debug_level,
                 'Yielding output for {} reads',
@@ -385,7 +405,11 @@ class REDItools(object):
 
     def use_strand_correction(self):
         """Only reports reads/positions that match `strand`."""
-        self.usestrand_correction = True
+        self._use_strand_correction = True
+
+    def only_one_alt(self):
+        """Only report a position if there is less than 2 alt bases."""
+        self._rtqc.add(self._rtqc.check_multiple_alts)
 
     def add_reference(self, reference_fname):
         """
@@ -398,8 +422,10 @@ class REDItools(object):
 
     def _get_column(self, position, bases, region):
         strand = bases.get_strand(threshold=self.strand_confidence_threshold)
-        if self.usestrand_correction:
-            bases.filter_bystrand(strand)
+        if self._use_strand_correction:
+            bases.filter_by_strand(strand)
+            if not bases:
+                return None
         if strand == '-':
             bases.complement()
 

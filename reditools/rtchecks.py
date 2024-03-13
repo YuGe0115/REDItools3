@@ -42,7 +42,11 @@ class RTChecks(object):
         Returns:
             (bool): True of all checks pass, else false
         """
-        return utils.check_list(self.check_list, bases=bases)
+        return utils.check_list(
+            self.check_list,
+            bases=bases,
+            rtools=rtools,
+        )
 
     def check_splice_positions(self, rtools, bases, contig, position):
         """
@@ -142,15 +146,13 @@ class RTChecks(object):
             return False
         return True
 
-    def check_column_edit_frequency(self, rtools, bases, contig, position):
+    def check_column_edit_frequency(self, rtools, bases):
         """
         Check the number of edits at the site.
 
         Parameters:
             rtools (REDItools): Object performing analysis
             bases (CompiledPosition): Base position under analysis
-            contig (str): Current contig
-            position (int): Current position
 
         Returns:
             (bool): True if there are sufficient edits.
@@ -179,7 +181,7 @@ class RTChecks(object):
         Returns:
             (bool): True if there are sufficient edits
         """
-        for num_edits in bases.getmin_edits():
+        for num_edits in bases.get_min_edits():
             if 0 < num_edits < rtools.min_edits_per_nucleotide:
                 rtools.log(
                     Logger.debug_level,
@@ -189,3 +191,15 @@ class RTChecks(object):
                 )
                 return False
         return True
+
+    def check_multiple_alts(self, bases):
+        """
+        Check that there is, at most, one alternate base.
+
+        Parameters:
+            bases (CompiledPosition): Base position under analysis
+
+        Returns:
+            (bool): True if there is zero or one alt
+        """
+        return len(bases.get_variants()) < 2
