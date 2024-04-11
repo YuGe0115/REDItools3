@@ -127,6 +127,7 @@ class REDItools(object):
         self._target_positions = False
         self._exclude_positions = {}
         self._splice_positions = []
+
         self._specific_edits = None
 
         self.reference = None
@@ -323,6 +324,7 @@ class REDItools(object):
         """
         if region is None:
             region = {}
+
         # Open the iterator
         self.log(
             Logger.info_level,
@@ -374,6 +376,13 @@ class REDItools(object):
             if column is None:
                 self.log(Logger.debug_level, 'Bad column - skipping')
                 continue
+            if self._specific_edits:
+                if not self._specific_edits & set(column.variants):
+                    self.log(
+                        Logger.debug_level,
+                        'Requested edits not found - skipping',
+                    )
+                    continue
             self.log(
                 Logger.debug_level,
                 'Yielding output for {} reads',
