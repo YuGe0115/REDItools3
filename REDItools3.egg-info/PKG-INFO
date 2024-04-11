@@ -1,0 +1,24 @@
+Metadata-Version: 2.1
+Name: REDItools3
+Version: 3.1a0
+Author: Ernesto Picardi
+Author-email: Adam Handen <adam.handen@gmail.com>
+Project-URL: homepage, https://github.com/BioinfoUNIBA/REDItools3
+Project-URL: repository, https://github.com/BioinfoUNIBA/REDItools3
+Project-URL: issues, https://github.com/BioinfoUNIBA/REDItools3/issues
+Keywords: bioinformatics,RNA,editing
+Requires-Python: >=3.11.5
+Description-Content-Type: text/markdown
+Requires-Dist: pysam>=0.22.0
+Requires-Dist: sortedcontainers>=2.4.0
+
+# REDItools3
+A new REDItools implementation to speed-up the RNA editing profiling in massive RNAseq data
+
+# Installation
+Use the whl file under the dist directory.
+`pip install dist/reditools-0.1-py3-none-any.whl`
+
+# Usage
+Once installed, reditools can be run from the commandline.
+`python -m reditools`
