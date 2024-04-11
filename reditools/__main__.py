@@ -15,7 +15,7 @@ Run Modes:
   analyze            Find editing events in one or more alignment files.
 
   find-repeats       Find repetitive elements in a genome.
-  
+
   index              Calculate editing indices from the output of `analyze`
                      mode.
 """)
