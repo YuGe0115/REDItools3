@@ -374,6 +374,13 @@ class REDItools(object):
             if column is None:
                 self.log(Logger.debug_level, 'Bad column - skipping')
                 continue
+            if self._specific_edits:
+                if not self._specific_edits & set(column.variants):
+                    self.log(
+                        Logger.debug_level,
+                        'Requested edits not found - skipping',
+                    )
+                    continue
             self.log(
                 Logger.debug_level,
                 'Yielding output for {} reads',
