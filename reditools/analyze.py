@@ -91,7 +91,7 @@ def setup_rtools(options):  # noqa:WPS213,WPS231
         )
 
     if options.splicing_file:
-        rtools.load_splicing_file(
+        rtools.splice_positions = file_utils.load_splicing_file(
             options.splicing_file,
             options.splicing_span,
         )
