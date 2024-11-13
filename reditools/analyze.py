@@ -79,16 +79,8 @@ def setup_rtools(options):  # noqa:WPS213,WPS231
         rtools.log_level = Logger.info_level
 
     if options.load_omopolymeric_file:
-        regions = file_utils.load_omopolymeric_regions(
-            options.load_omopolymeric_file,
-        )
+        regions = file_utils.read_bed_file(options.load_omopolymeric_file)
         rtools.exclude(regions)
-
-    if options.create_omopolymeric_file:
-        rtools.create_omopolymeric_positions(
-            options.create_omopolymeric_file,
-            options.omopolymeric_span,
-        )
 
     if options.splicing_file:
         rtools.splice_positions = file_utils.load_splicing_file(
@@ -266,13 +258,6 @@ def parse_options():  # noqa:WPS213
         '-m',
         '--load-omopolymeric-file',
         help='The file containing the omopolymeric positions',
-    )
-    parser.add_argument(
-        '-c',
-        '--create-omopolymeric-file',
-        default=False,
-        help='Path to write omopolymeric positions to',
-        action='store_true',
     )
     parser.add_argument(
         '-os',
