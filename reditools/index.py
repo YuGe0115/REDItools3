@@ -180,7 +180,11 @@ def parse_options():  # noqa:WPS213
     Returns:
         namespace: commandline args
     """
-    parser = argparse.ArgumentParser(description='REDItools 2.0')
+    parser = argparse.ArgumentParser(
+        prog="reditools index",
+        description='REDItools3',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
     parser.add_argument(
         'file',
         nargs='+',

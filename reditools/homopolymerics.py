@@ -42,7 +42,11 @@ def parse_options():
     Returns:
         namespace
     """
-    parser = argparse.ArgumentParser(description='REDItools 2.0')
+    parser = argparse.ArgumentParser(
+        prog="reditools find-repeats",
+        description='REDItools3',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
     parser.add_argument(
         'file',
         help='The fasta file to be analyzed',
