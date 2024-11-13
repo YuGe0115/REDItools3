@@ -2,7 +2,6 @@
 
 import csv
 import os
-from collections import defaultdict
 from gzip import open as gzip_open
 
 from reditools.region import Region
@@ -64,27 +63,6 @@ def concat(output, *fnames, clean_up=True, encoding='utf-8'):
                 output.write(line)
         if clean_up:
             os.remove(fname)
-
-
-def load_poly_regions(fname):
-    """
-    Read omopolymeric positions from a file.
-
-    Parameters:
-        fname (str): File path
-
-    Returns:
-        (dict): Contigs and regions
-    """
-    poly_regions = defaultdict(set)
-    with read_bed_file(fname) as reader:
-        for row in reader:
-            poly_regions[row[0]] = Region(
-                contig=row[0],
-                start=row[1],
-                stop=row[2],
-            )
-    return poly_regions
 
 
 def load_splicing_file(splicing_file, splicing_span):
