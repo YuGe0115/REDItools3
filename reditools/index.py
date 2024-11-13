@@ -193,6 +193,7 @@ def parse_options():  # noqa:WPS213
     parser.add_argument(
         '-o',
         '--output-file',
+        default='/dev/stdout',
         help='The output statistics file',
     )
     parser.add_argument(
@@ -243,7 +244,7 @@ def main():
             indexer.add_target_from_bed(trg_fname)
 
     if options.output_file:
-        stream = open_stream(options.output_fipe, 'w')
+        stream = open_stream(options.output_file, 'w')
     else:
         stream = sys.stdout
 

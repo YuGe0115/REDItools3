@@ -61,6 +61,7 @@ def parse_options():
     parser.add_argument(
         '-o',
         '--output',
+        default='/dev/stdout',
         help='Destination to write results. Default is to use STDOUT. ' +
         'If the filename ends in .gz, the contents will be gzipped.',
     )
