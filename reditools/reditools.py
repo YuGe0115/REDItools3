@@ -293,8 +293,6 @@ class REDItools(object):
         """
         return self._exclude_positions
 
-<<<<<<< HEAD
-=======
     @property
     def max_alts(self):
         """Maximum number of alternative bases for a position."""
@@ -309,7 +307,6 @@ class REDItools(object):
         else:
             self._rtqc.discard(function)
 
->>>>>>> dev
     def exclude(self, regions):
         """
         Explicitly skip specified genomic regions.
@@ -340,10 +337,7 @@ class REDItools(object):
         """
         if region is None:
             region = {}
-<<<<<<< HEAD
 
-=======
->>>>>>> dev
         # Open the iterator
         self.log(
             Logger.info_level,
