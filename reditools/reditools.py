@@ -127,7 +127,6 @@ class REDItools(object):
         self._target_positions = False
         self._exclude_positions = {}
         self._splice_positions = []
-
         self._specific_edits = None
 
         self.reference = None
@@ -293,6 +292,20 @@ class REDItools(object):
             Dictionary of contigs to positions
         """
         return self._exclude_positions
+
+    @property
+    def max_alts(self):
+        """Maximum number of alternative bases for a position."""
+        return self._max_alts
+
+    @max_alts.setter
+    def max_alts(self, max_alts):
+        self._max_alts = max_alts
+        function = self._rtqc.check_max_alts
+        if max_alts < 3:
+            self._rtqc.add(function)
+        else:
+            self._rtqc.discard(function)
 
     def exclude(self, regions):
         """
