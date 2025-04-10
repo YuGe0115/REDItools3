@@ -11,6 +11,7 @@ reditools/__main__.py
 reditools/alignment_file.py
 reditools/alignment_manager.py
 reditools/analyze.py
+reditools/annotate.py
 reditools/compiled_position.py
 reditools/compiled_reads.py
 reditools/fasta_file.py

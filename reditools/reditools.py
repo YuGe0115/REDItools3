@@ -134,7 +134,7 @@ class REDItools(object):
         self._include_refs = None
 
     @property
-    def includ_refs(self):
+    def include_refs(self):
         """
         Genome reference bases to report on.
 
@@ -149,22 +149,29 @@ class REDItools(object):
         Specific edit events to report.
 
         Returns:
-            iterable
+            set
         """
         return self._specific_edits
 
     @specific_edits.setter
-    def specific_edits(self, alts):
-        function_a = self._rtqc.check_specific_edits
-        function_b = self._rtqc.check_ref
-        self._specific_edits = set(alts)
-        self._include_refs = [_[0] for _ in alts]
-        if self._include_refs:
-            self._rtqc.add(function_a)
-            self._rtqc.add(function_b)
-        else:
-            self._rtqc.discard(function_a)
-            self._rtqc.discard(function_b)
+    def specific_edits(self, edits):
+        if edits == ["ALL"]:
+            edits = []
+        for alt in edits:
+            if not self._verify_alt(alt):
+                raise Exception(
+                        f'Specific edit "{alt}" is not valid. ' +
+                        'Edits must be two character strings of ATCG.')
+        self._specific_edits = set(edits)
+
+    def _verify_alt(self, alt):
+        if not isinstance(alt, str):
+            return False
+        if len(alt) != 2:
+            return False
+        if alt[0] not in 'ATCG' and alt[1] not in 'ATCG':
+            return False
+        return True
 
     @property
     def splice_positions(self):
@@ -389,13 +396,12 @@ class REDItools(object):
             if column is None:
                 self.log(Logger.debug_level, 'Bad column - skipping')
                 continue
-            if self._specific_edits:
-                if not self._specific_edits & set(column.variants):
-                    self.log(
-                        Logger.debug_level,
-                        'Requested edits not found - skipping',
-                    )
-                    continue
+            if self._specific_edits and not self._specific_edits & set(column.variants):
+                self.log(
+                    Logger.debug_level,
+                    'Requested edits not found - skipping',
+                )
+                continue
             self.log(
                 Logger.debug_level,
                 'Yielding output for {} reads',

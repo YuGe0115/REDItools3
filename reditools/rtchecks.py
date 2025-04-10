@@ -218,26 +218,6 @@ class RTChecks(object):
             return False
         return True
 
-    def check_ref(self, bases, rtools):
-        """
-        Check if the reference base is of interest.
-
-        Parameters:
-            bases (CompiledPosition): Data for analysis
-            rtools (REDItools): Object running the analysis
-
-        Returns:
-            (bool): True if reference base was specified
-        """
-        if bases.ref not in rtools.include_refs:
-            rtools.log(
-                Logger.debug_level,
-                'DISCARD COLUMN base "{}" not listed for reporting',
-                bases.ref,
-            )
-            return False
-        return True
-
     def check_exclusions(self, bases, rtools):
         """
         Check if the bases object is in an excluded position.
@@ -252,27 +232,6 @@ class RTChecks(object):
         if bases.position in rtools.exclude_positions.get(bases.contig, []):
             rtools.log(Logger.debug_level, 'DISCARD COLUMN in excluded region')
             return False
-        return True
-
-    def check_specific_edits(self, bases, rtools):
-        """
-        Check whether specified edits are present.
-
-        Parameters:
-            bases (CompiledPosition): Data for analysis
-            rtools (REDItools): Object running the analysis
-
-        Returns:
-            (bool): True if the edit was specified
-        """
-        for ref, alt in rtools.specific_edits:
-            if not bases[ref] or not bases[alt]:
-                rtools.log(
-                    Logger.debug_level,
-                    'DISCARD COLUMN edit "{}" not specified for output',
-                    ref + alt,
-                )
-                return False
         return True
 
     def check_max_alts(self, bases, rtools):

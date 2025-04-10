@@ -88,6 +88,9 @@ def setup_rtools(options):  # noqa:WPS213,WPS231
             options.splicing_span,
         )
 
+    if options.variants:
+        rtools.specific_edits = [_.upper() for _ in options.variants]
+
     if options.bed_file:
         regions = file_utils.read_bed_file(options.bed_file)
         rtools.target_positions = regions
@@ -173,7 +176,7 @@ def write_results(rtools, sam_manager, file_name, region, output_format):
                 rt_result.per_base_depth,
                 ' '.join(sorted(variants)) if variants else '-',
                 f'{rt_result.edit_ratio:.2f}',
-                '\t'.join(['-' for _ in range(5)]),
+                '-', '-', '-', '-', '-',
             ])
         return stream.name
 
@@ -345,7 +348,7 @@ def parse_options():  # noqa:WPS213
         '-me',
         '--min-edits',
         type=int,
-        default=0,  # noqa:WPS432
+        default=1,
         help='The minimum number of editing events (per position). ' +
         'Positions with fewer than -me edits will be discarded.',
     )
@@ -425,6 +428,14 @@ def parse_options():  # noqa:WPS213
         default=False,
         help='Run in debug mode.',
         action='store_true',
+    )
+    parser.add_argument(
+        '-v',
+        '--variants',
+        nargs='*',
+        default=['CT', 'AG'],
+        help='Which editing events to report. Edits should be two characters, '
+        'separated by spaces. Use "all" to report all variants.',
     )
 
     return parser.parse_args()
