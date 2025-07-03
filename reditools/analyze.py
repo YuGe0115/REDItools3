@@ -7,6 +7,10 @@ import traceback
 from multiprocessing import Process, Queue
 from queue import Empty as EmptyQueueException
 from tempfile import NamedTemporaryFile
+import pandas as pd
+import os
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 from reditools import file_utils, reditools, utils
 from reditools.alignment_manager import AlignmentManager
@@ -436,6 +440,13 @@ def parse_options():  # noqa:WPS213
         default=['CT', 'AG'],
         help='Which editing events to report. Edits should be two characters, '
         'separated by spaces. Use "all" to report all variants.',
+    )
+    parser.add_argument(
+        '-fp',
+        '--frequency-precision',
+        type=int,
+        default=2,
+        help='Decimal precision for Frequency',
     )
 
     return parser.parse_args()
