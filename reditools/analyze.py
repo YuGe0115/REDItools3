@@ -150,7 +150,7 @@ def region_args(bam_fname, region, window):
     return args
 
 
-def write_results(rtools, sam_manager, file_name, region, output_format):
+def write_results(rtools, sam_manager, file_name, region, output_format,frequency_precision):
     """
     Write the results from a REDItools analysis to a temporary file.
 
@@ -177,7 +177,7 @@ def write_results(rtools, sam_manager, file_name, region, output_format):
                 f'{rt_result.mean_quality:.2f}',
                 rt_result.per_base_depth,
                 ' '.join(sorted(variants)) if variants else '-',
-                f'{rt_result.edit_ratio:.{options.frequency_precision}f}',
+                f'{rt_result.edit_ratio:.{frequency_precision}f}',
                 '-', '-', '-', '-', '-',
             ])
         return stream.name
