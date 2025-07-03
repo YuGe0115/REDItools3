@@ -9,8 +9,6 @@ from queue import Empty as EmptyQueueException
 from tempfile import NamedTemporaryFile
 import pandas as pd
 import os
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 from reditools import file_utils, reditools, utils
 from reditools.alignment_manager import AlignmentManager
@@ -179,7 +177,7 @@ def write_results(rtools, sam_manager, file_name, region, output_format):
                 f'{rt_result.mean_quality:.2f}',
                 rt_result.per_base_depth,
                 ' '.join(sorted(variants)) if variants else '-',
-                f'{rt_result.edit_ratio:.2f}',
+                f'{rt_result.edit_ratio:.{options.frequency_precision}f}',
                 '-', '-', '-', '-', '-',
             ])
         return stream.name
@@ -211,6 +209,7 @@ def run(options, in_queue, out_queue):
                 options.file,
                 region,
                 options.output_format,
+                options.frequency_precision,
             )
             out_queue.put((idx, file_name))
     except Exception as exc:
