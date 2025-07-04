@@ -67,7 +67,7 @@ class RTResult(object):
             max_edits = max(self.bases[base] for base in self._variants)
         else:
             max_edits = 0
-        return max_edits / (max_edits + self.bases['REF'])
+        return max_edits / (sum(self.bases[base] for base in self._variants) + self.bases['REF'])
 
     @property
     def reference(self):
