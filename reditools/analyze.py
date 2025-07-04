@@ -8,7 +8,6 @@ from multiprocessing import Process, Queue
 from queue import Empty as EmptyQueueException
 from tempfile import NamedTemporaryFile
 import pandas as pd
-import os
 
 from reditools import file_utils, reditools, utils
 from reditools.alignment_manager import AlignmentManager
@@ -167,6 +166,12 @@ def write_results(rtools, sam_manager, file_name, region, output_format):
     Returns:
         string: Name of the temporary file.
     """
+
+    # Store information about different editing events at the same locus.
+    site_results = {}
+    for rt_result in rtools.analyze(sam_manager, region):
+        site_results[(rt_result.contig, rt_result.position)] = rt_result
+
     with NamedTemporaryFile(mode='w', delete=False) as stream:
         writer = csv.writer(stream, **output_format)
         for rt_result in rtools.analyze(sam_manager, region):
