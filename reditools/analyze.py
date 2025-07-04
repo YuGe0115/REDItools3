@@ -181,7 +181,7 @@ def write_results(rtools, sam_manager, file_name, region, output_format):
                     f'{rt_result.mean_quality:.2f}',
                     rt_result.per_base_depth,
                     ' '.join(sorted(variants)) if variants else '-',
-                    f'{rt_result.all_edit_ratios:.{rtools.frequency_precision}f}',
+                    ','.join([f'{ratio:.{rtools.frequency_precision}f}' for ratio in rt_result.all_edit_ratios]),
                     '-', '-', '-', '-', '-',
             ])
         return stream.name
