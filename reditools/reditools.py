@@ -78,7 +78,8 @@ class RTResult(object):
             dict: A dictionary mapping variants to their edit ratios.
         """
         total = sum(self.bases[base] for base in self._variants) + self.bases['REF']
-        return {base: self.bases[base] / total for base in self._variants} # 字典推导式，以变异碱基及base为键，以计算出的比率为值构建出一个字典
+        edit_ratio_dict = {base: self.bases[base] / total for base in self._variants} # 字典推导式，以变异碱基及base为键，以计算出的比率为值构建出一个字典
+        return list(edit_ratio_dict.values)
 
     @property
     def reference(self):
