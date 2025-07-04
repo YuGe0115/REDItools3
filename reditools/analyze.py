@@ -112,6 +112,8 @@ def setup_rtools(options):  # noqa:WPS213,WPS231
     rtools.min_edits_per_nucleotide = options.min_edits_per_nucleotide
     rtools.strand = options.strand
     rtools.max_alts = options.max_editing_nucleotides
+    rtools.frequency_precision = options.frequency_precision
+    rtools.min_frequency = options.min_frequency
 
     rtools.strand_confidence_threshold = options.strand_confidence_threshold
 
@@ -150,7 +152,7 @@ def region_args(bam_fname, region, window):
     return args
 
 
-def write_results(rtools, sam_manager, file_name, region, output_format, frequency_precision, min_frequency):
+def write_results(rtools, sam_manager, file_name, region, output_format):
 
     """
     Write the results from a REDItools analysis to a temporary file.
@@ -169,7 +171,7 @@ def write_results(rtools, sam_manager, file_name, region, output_format, frequen
         writer = csv.writer(stream, **output_format)
         for rt_result in rtools.analyze(sam_manager, region):
             variants = rt_result.variants
-            if rt_result.edit_ratio > min_frequency: # filter
+            if rt_result.edit_ratio > rtools.min_frequency: # filter
                 writer.writerow([
                     rt_result.contig,
                     rt_result.position,
@@ -179,7 +181,7 @@ def write_results(rtools, sam_manager, file_name, region, output_format, frequen
                     f'{rt_result.mean_quality:.2f}',
                     rt_result.per_base_depth,
                     ' '.join(sorted(variants)) if variants else '-',
-                    f'{rt_result.edit_ratio:.{frequency_precision}f}',
+                    f'{rt_result.edit_ratio:.{rtools.frequency_precision}f}',
                     '-', '-', '-', '-', '-',
             ])
         return stream.name
@@ -211,8 +213,6 @@ def run(options, in_queue, out_queue):
                 options.file,
                 region,
                 options.output_format,
-                options.frequency_precision,
-                options.min_frequency,
             )
             out_queue.put((idx, file_name))
     except Exception as exc:
