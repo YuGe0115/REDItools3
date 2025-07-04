@@ -168,17 +168,18 @@ def write_results(rtools, sam_manager, file_name, region, output_format,frequenc
         writer = csv.writer(stream, **output_format)
         for rt_result in rtools.analyze(sam_manager, region):
             variants = rt_result.variants
-            writer.writerow([
-                rt_result.contig,
-                rt_result.position,
-                rt_result.reference,
-                rt_result.strand,
-                rt_result.depth,
-                f'{rt_result.mean_quality:.2f}',
-                rt_result.per_base_depth,
-                ' '.join(sorted(variants)) if variants else '-',
-                f'{rt_result.edit_ratio:.{frequency_precision}f}',
-                '-', '-', '-', '-', '-',
+            if rt_result.edit_ratio > options.min_frequency: # filter
+                writer.writerow([
+                    rt_result.contig,
+                    rt_result.position,
+                    rt_result.reference,
+                    rt_result.strand,
+                    rt_result.depth,
+                    f'{rt_result.mean_quality:.2f}',
+                    rt_result.per_base_depth,
+                    ' '.join(sorted(variants)) if variants else '-',
+                    f'{rt_result.edit_ratio:.{frequency_precision}f}',
+                    '-', '-', '-', '-', '-',
             ])
         return stream.name
 
@@ -210,6 +211,7 @@ def run(options, in_queue, out_queue):
                 region,
                 options.output_format,
                 options.frequency_precision,
+                options.min_frequency,
             )
             out_queue.put((idx, file_name))
     except Exception as exc:
@@ -440,12 +442,19 @@ def parse_options():  # noqa:WPS213
         help='Which editing events to report. Edits should be two characters, '
         'separated by spaces. Use "all" to report all variants.',
     )
-    parser.add_argument(
+    parser.add_argument( # new added
         '-fp',
         '--frequency-precision',
         type=int,
         default=2,
         help='Decimal precision for Frequency',
+    )
+    parser.add_argument( #new added
+        '-mf',
+        '--min-frequency',
+        type=float,
+        default=0.00,
+        help='Minimum frequency to report',
     )
 
     return parser.parse_args()
