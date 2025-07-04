@@ -113,6 +113,7 @@ def setup_rtools(options):  # noqa:WPS213,WPS231
     rtools.max_alts = options.max_editing_nucleotides
     rtools.frequency_precision = options.frequency_precision
     rtools.min_frequency = options.min_frequency
+    rtools.show_all_frequency = options.show_all_frequency
 
     rtools.strand_confidence_threshold = options.strand_confidence_threshold
 
@@ -172,6 +173,10 @@ def write_results(rtools, sam_manager, file_name, region, output_format):
         for rt_result in rtools.analyze(sam_manager, region):
             variants = rt_result.variants
             if rt_result.edit_ratio > rtools.min_frequency: # filter
+                if rtools.show_all_frequency:
+                    frequency_str = ','.join([f'{ratio:.{rtools.frequency_precision}f}' for ratio in rt_result.all_edit_ratios])
+                else:
+                    frequency_str = f'{rt_result.edit_ratio:.{rtools.frequency_precision}f}'
                 writer.writerow([
                     rt_result.contig,
                     rt_result.position,
@@ -181,7 +186,7 @@ def write_results(rtools, sam_manager, file_name, region, output_format):
                     f'{rt_result.mean_quality:.2f}',
                     rt_result.per_base_depth,
                     ' '.join(sorted(variants)) if variants else '-',
-                    ','.join([f'{ratio:.{rtools.frequency_precision}f}' for ratio in rt_result.all_edit_ratios]),
+                    frequency_str,
                     '-', '-', '-', '-', '-',
             ])
         return stream.name
@@ -192,7 +197,7 @@ def run(options, in_queue, out_queue):
     Analyze a genomic segment using REDItools.
 
     Parameters:
-        options (namesapce): Configuration options from argparse for REDItools
+        options (namespace): Configuration options from argparse for REDItools
         in_queue (Queue): Queue of input arguments for analysis
         out_queue (Queue): Queue to store paths to analysis results
 
@@ -456,6 +461,13 @@ def parse_options():  # noqa:WPS213
         type=float,
         default=0.00,
         help='Minimum frequency to report',
+    )
+    parser.add_argument( #new added
+        '-saf',
+        '--show-all-frequency',
+        action='store_true', 
+        default=False, 
+        help='Show all frequencies instead of just the maximum',
     )
 
     return parser.parse_args()
