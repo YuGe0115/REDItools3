@@ -68,6 +68,17 @@ class RTResult(object):
         else:
             max_edits = 0
         return max_edits / (sum(self.bases[base] for base in self._variants) + self.bases['REF'])
+    
+    @property
+    def all_edit_ratios(self):
+        """
+        Edit ratios of all variants.
+
+        Returns:
+            dict: A dictionary mapping variants to their edit ratios.
+        """
+        total = sum(self.bases[base] for base in self._variants) + self.bases['REF']
+        return {base: self.bases[base] / total for base in self._variants} # 字典推导式，以变异碱基及base为键，以计算出的比率为值构建出一个字典
 
     @property
     def reference(self):
