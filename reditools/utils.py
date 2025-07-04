@@ -5,6 +5,7 @@ import os
 import re
 import socket
 from collections import defaultdict
+import pandas as pd
 
 from pysam.libcalignmentfile import AlignmentFile
 from sortedcontainers import SortedSet
@@ -104,3 +105,15 @@ def get_contigs(sam_path):
         indices = range(len(contigs))
         indices = sorted(indices, key=lambda idx: contigs[idx])
         return ((contigs[idx], sizes[idx]) for idx in indices)
+
+
+def load_data(file_path: str) -> pd.DataFrame:
+    try:
+        data = pd.read_csv(file_path, sep="\t")
+        required_columns = ["Region", "Position", "Frequency"]
+        missing = [col for col in required_columns if col not in data.columns]
+        if missing:
+            raise ValueError(f"Missing required columns: {', '.join(missing)}")
+        return data
+    except Exception as e:
+        raise ValueError(f"Unable to read input file: {e}")

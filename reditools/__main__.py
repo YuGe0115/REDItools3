@@ -2,7 +2,7 @@
 
 import sys
 
-from reditools import analyze, homopolymerics, index, annotate
+from reditools import analyze, homopolymerics, index, annotate, visualize
 
 
 def usage():
@@ -35,6 +35,8 @@ if __name__ == '__main__':
                 index.main()
             case 'annotate':
                 annotate.main()
+            case 'visualize':
+                visualize.main()
             case _:
                 usage()
     else:

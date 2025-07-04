@@ -1,0 +1,8 @@
+{
+  "figsize": [12, 6],
+  "dpi": 300,
+  "title": "RNA Editing Frequency Distribution",
+  "bins": 50,
+  "colors": ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"],
+  "format": "png"
+}
