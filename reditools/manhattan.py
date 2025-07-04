@@ -78,13 +78,13 @@ class ManhattanPlotter(Plotter):
         
         # 设置图表标题
         # self.config.get("title", "RNA 编辑曼哈顿图"): 从 config 获取标题，默认为中文
-        plt.title(self.config.get("title", "RNA 编辑曼哈顿图"))
+        plt.title(self.config.get("title", "RNA Manhattan"))
         
         # 设置 X 轴标签为“基因组位置”
-        plt.xlabel("基因组位置")
+        plt.xlabel("Genomic position")
         
         # 设置 Y 轴标签为“编辑频率”
-        plt.ylabel("编辑频率")
+        plt.ylabel("Frequency")
         
         # 设置 X 轴刻度
         # [x for x, _ in x_labels]: 提取 x_labels 中的位置（均值 Position + 偏移量）
