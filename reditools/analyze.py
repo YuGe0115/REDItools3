@@ -150,7 +150,8 @@ def region_args(bam_fname, region, window):
     return args
 
 
-def write_results(rtools, sam_manager, file_name, region, output_format,frequency_precision):
+def write_results(rtools, sam_manager, file_name, region, output_format, frequency_precision, min_frequency):
+
     """
     Write the results from a REDItools analysis to a temporary file.
 
@@ -168,7 +169,7 @@ def write_results(rtools, sam_manager, file_name, region, output_format,frequenc
         writer = csv.writer(stream, **output_format)
         for rt_result in rtools.analyze(sam_manager, region):
             variants = rt_result.variants
-            if rt_result.edit_ratio > options.min_frequency: # filter
+            if rt_result.edit_ratio > min_frequency: # filter
                 writer.writerow([
                     rt_result.contig,
                     rt_result.position,
